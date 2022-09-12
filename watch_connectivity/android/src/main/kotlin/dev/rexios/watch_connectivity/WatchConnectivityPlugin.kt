@@ -29,6 +29,7 @@ class WatchConnectivityPlugin : FlutterPlugin, MethodCallHandler,
     private lateinit var messageClient: MessageClient
     private lateinit var dataClient: DataClient
     private lateinit var localNode: Node
+    private lateinit var channelClient: ChannelClient
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, channelName)
@@ -40,6 +41,7 @@ class WatchConnectivityPlugin : FlutterPlugin, MethodCallHandler,
         nodeClient = Wearable.getNodeClient(context)
         messageClient = Wearable.getMessageClient(context)
         dataClient = Wearable.getDataClient(context)
+        channelClient = Wearable.getChannelClient(context)
 
         messageClient.addListener(this)
         dataClient.addListener(this)
@@ -65,6 +67,7 @@ class WatchConnectivityPlugin : FlutterPlugin, MethodCallHandler,
             // Methods
             "sendMessage" -> sendMessage(call, result)
             "updateApplicationContext" -> updateApplicationContext(call, result)
+            "sendFile" -> sendFile(call, result)
 
             // Not implemented
             else -> result.notImplemented()
@@ -158,5 +161,20 @@ class WatchConnectivityPlugin : FlutterPlugin, MethodCallHandler,
                 val eventContent = objectFromBytes(item.dataItem.data)
                 channel.invokeMethod("didReceiveApplicationContext", eventContent)
             }
+    }
+
+    private fun sendFile(call: MethodCall, result: Result) {
+        val fileData = objectToBytes(call.arguments)
+        nodeClient.connectedNodes.addOnSuccessListener { nodes ->
+            nodes.forEach { 
+                // pseudo code
+                // channel = channelClient.openChannel(it.id, channelName)
+                // stream = channel.getOutputStream(channel)
+                // stream.write(fileData)
+                // stream.close()
+                // channel.close()
+            }
+            result.success(null)
+        }.addOnFailureListener { result.error(it.message ?: "", it.localizedMessage, it) }
     }
 }

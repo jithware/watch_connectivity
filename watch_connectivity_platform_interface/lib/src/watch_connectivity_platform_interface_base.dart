@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -89,5 +91,12 @@ abstract class WatchConnectivityBase {
   /// Update the application context
   Future<void> updateApplicationContext(Map<String, dynamic> context) {
     return channel.invokeMethod('updateApplicationContext', context);
+  }
+
+  /// Send a file to all connected watches
+  Future<void> sendFile(File file) {
+    final Uint8List bytes =
+        file.readAsBytesSync(); //TODO: convert to type for Android
+    return channel.invokeMethod('sendFile', bytes);
   }
 }
